@@ -296,8 +296,14 @@ select d.* from departamento d left join empleado e on d.id = e.id_departamento 
 -- tienen ningún departamento asociado y los departamentos que no tienen
 -- ningún empleado asociado. Ordene el listado alfabéticamente por el
 -- nombre del departamento.
-select * from empleado e left join departamento d on d.id = e.id_departamento order by d.nombre;
+select * from empleado e left join departamento d on d.id = e.id_departamento union
+select * from empleado e right join departamento d on d.id = e.id_departamento order by 8;
 
+-- 5. Devuelve un listado con los empleados que no tienen ningún departamento
+-- asociado y los departamentos que no tienen ningún empleado asociado.
+-- Ordene el listado alfabéticamente por el nombre del departamento.
+select * from empleado e left join departamento d on d.id = e.id_departamento where d.id is null union
+select * from empleado e right join departamento d on d.id = e.id_departamento where e.id_departamento is null order by 8; 
 
 
 -- Consultas resumen
