@@ -582,3 +582,34 @@ delimiter ;
 select id , valor_pagado(id_vehiculo , fecha_salida , fecha_esperada_llegada , fecha_llegada) as valor_pagado_real from alquileres;
 
 
+-- funcion para ver la cantidad de dias de retraso
+drop function if exists dias_retraso;
+delimiter //
+create function dias_retraso (fecha1 date, fecha2 date)
+returns int deterministic
+begin
+	declare total_dias int;
+	set total_dias = fecha2 - fecha1;
+    if total_dias <= 0 or total_dias is null then set total_dias = 0 ;
+    end if ;
+    return total_dias;
+end //
+delimiter ;
+
+
+select id , dias_retraso (fecha_esperada_llegada , fecha_llegada) as dias_de_retraso from alquileres;
+
+
+
+-- funcion para ver nombres completos
+drop function if exists nombre_completo;
+delimiter //
+create function nombre_completo (nombre1 varchar(45) , nombre2 varchar(45) , apellido1 varchar(45) , apellido2 varchar(45))
+returns varchar(200) deterministic
+begin
+    return concat(nombre1,' ',nombre2,' ',apellido1,' ',apellido2);
+end //
+delimiter ;
+
+select id , nombre_completo (nombre1 , nombre2 , apellido1 , apellido2) as nombre_completo from cliente;
+select id , nombre_completo (nombre1 , nombre2 , apellido1 , apellido2) as nombre_completo from empleado;
