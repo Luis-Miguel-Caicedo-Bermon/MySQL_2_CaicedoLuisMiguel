@@ -613,3 +613,182 @@ delimiter ;
 
 select id , nombre_completo (nombre1 , nombre2 , apellido1 , apellido2) as nombre_completo from cliente;
 select id , nombre_completo (nombre1 , nombre2 , apellido1 , apellido2) as nombre_completo from empleado;
+
+
+
+
+
+-- procedimientos --------------------------------------------------
+-- 1 Actualizar el valor cotizado
+drop procedure if exists asignar_valor_cotizado;
+delimiter //
+create procedure asignar_valor_cotizado (id_alquiler int , valor_cotizado int)
+begin
+	update alquileres set valor_cotizado = valor_cotizado where id = id_alquiler;
+end
+// delimiter ;
+
+
+-- 2 hacer un bucle
+drop procedure if exists bucle;
+delimiter //
+create procedure bucle ()
+begin
+	declare contador int;
+    set contador = 1;
+	while contador <= (select count(*) from alquileres) do
+		call asignar_valor_cotizado (contador , (select valor_cotizado (id_vehiculo , fecha_salida , fecha_esperada_llegada) as valor_cotizado_real from alquileres where id = contador));
+        set contador = contador + 1;
+	end while;
+end
+// delimiter ;
+
+call bucle();
+
+
+-- 3 actualizar valor pagado
+drop procedure if exists asignar_valor_pagado;
+delimiter //
+create procedure asignar_valor_pagado (id_alquiler int , valor_pagado_real int)
+begin
+	update alquileres set valor_pagado = valor_pagado_real where id = id_alquiler;
+end
+// delimiter ;
+
+-- 4 bucle para actualizar todos los valores pagados
+drop procedure if exists bucle2;
+delimiter //
+create procedure bucle2 ()
+begin
+	declare contador int;
+    set contador = 1;
+	while contador <= (select count(*) from alquileres) do
+		call asignar_valor_pagado (contador , (select valor_pagado(id_vehiculo , fecha_salida , fecha_esperada_llegada , fecha_llegada) as valor_pagado_real from alquileres where id = contador));
+        set contador = contador + 1;
+	end while;
+end
+// delimiter ;
+
+call bucle2(); 
+
+
+
+
+-- 5  registrar clientes
+drop procedure if exists registrar_cliente;
+delimiter //
+create procedure registrar_cliente (
+    in cedula int,
+    in nombre1 varchar(45),
+    in nombre2 varchar(45),
+    in apellido1 varchar(45),
+    in apellido2 varchar(45),
+    in direccion varchar(45),
+    in ciudad varchar(45),
+    in celular int,
+    in correo varchar(45))
+begin
+	insert into cliente(cedula, nombre1, nombre2, apellido1, apellido2, direccion, ciudad, celular, correo) values (cedula, nombre1, nombre2, apellido1, apellido2, direccion, ciudad, celular, correo);
+end
+// delimiter ;
+
+call registrar_cliente (284726 , 'Luis' , 'Miguel' , 'Caicedo' , 'Bermon' , 'calle -5' , 'cucuta' , 382913 , 'luis@gmail.com');
+
+-- 6  registrar empleados
+drop procedure if exists registrar_empleado;
+delimiter //
+create procedure registrar_empleado (
+	in id_sucursal int,
+    in nombre1 varchar(45),
+    in nombre2 varchar(45),
+    in apellido1 varchar(45),
+    in apellido2 varchar(45),
+    in direccion varchar(45),
+    in ciudad varchar(45),
+    in celular int,
+    in correo varchar(45))
+begin
+	insert into empleado(id_sucursal, nombre1, nombre2, apellido1, apellido2, direccion, ciudad, celular, correo) values (id_sucursal, nombre1, nombre2, apellido1, apellido2, direccion, ciudad, celular, correo);
+end
+// delimiter ;
+
+call registrar_empleado (4 , 'Luis' , 'Orlando' , 'Henao' , 'Bermon' , 'calle -10' , 'tibu' , 234345 , 'luisorlando@gmail.com');
+
+-- 7 realizar un alquiler
+drop procedure if exists realizar_alquiler;
+delimiter //
+create procedure realizar_alquiler (
+    in id_vehiculo int,
+    in id_cliente int,
+    in id_empleado int,
+    in id_sucursal_salida int,
+    in fecha_salida date,
+    in id_sucursal_llegada int,
+    in fecha_esperada_llegada date,
+    in fecha_llegada date,
+    in valor_cotizado int,
+    in valor_pagado int
+    )
+begin
+	insert into alquileres(id_vehiculo, id_cliente, id_empleado, id_sucursal_salida, fecha_salida, id_sucursal_llegada, fecha_esperada_llegada, fecha_llegada, valor_cotizado,valor_pagado) values (id_vehiculo, id_cliente, id_empleado, id_sucursal_salida, fecha_salida, id_sucursal_llegada, fecha_esperada_llegada, fecha_llegada, valor_cotizado,valor_pagado);
+end
+// delimiter ;
+
+call realizar_alquiler (4, 2, 8, 2, current_date(), 3, current_date()+5 , current_date()+7, valor_cotizado (4 , current_date() , current_date()+5), valor_pagado(4 , current_date() , current_date()+5 , current_date()+7));
+
+
+-- 8 agregar nuevo vehiculo
+drop procedure if exists agregar_vehiculo;
+delimiter //
+create procedure agregar_vehiculo (
+	in id_tipo int,
+    in placa varchar(45),
+    in referencia varchar(45),
+    in modelo varchar(45),
+    in puertas int,
+    in capacidad int,
+    in sunroof boolean,
+    in motor varchar(45),
+    in color varchar(45)
+    )
+begin
+	insert into vehiculo(id_tipo, placa, referencia, modelo, puertas, capacidad, sunroof, motor, color) values (id_tipo, placa, referencia, modelo, puertas, capacidad, sunroof, motor, color);
+end
+// delimiter ;
+
+call agregar_vehiculo (7, 'asd098', '4X4', '2024', 4, 5, false, 'nisan', 'verde');
+
+
+
+-- 9 agregar sucursal
+drop procedure if exists agregar_sucursal;
+delimiter //
+create procedure agregar_sucursal (
+    ciudad varchar(45),
+    direccion varchar(45),
+    telefono int,
+    celular int,
+    correo varchar(45)
+    )
+begin
+	insert into sucursal(ciudad, direccion, telefono, celular, correo) values (ciudad, direccion, telefono, celular, correo);
+end
+// delimiter ;
+
+call agregar_sucursal ('Cucuta', 'crr-23', 124342, 346345, 'cucuta@gmail.com');
+
+-- 10 actualizar descuentos
+drop procedure if exists actualizar_descuento;
+delimiter //
+create procedure actualizar_descuento (id_descuento int, fecha_inicio_n date , fecha_fin_n date , porcentaje_descuento_n int)
+begin
+	update descuento set fecha_inicio = fecha_inicio_n where id = id_descuento;
+    update descuento set fecha_fin = fecha_fin_n where id = id_descuento;
+    update descuento set porcentaje_descuento = porcentaje_descuento_n where id = id_descuento;
+end
+// delimiter ;
+
+call actualizar_descuento (4, current_date(), adddate(current_date(), interval 2 month), 30);
+
+
+select * from descuento;
